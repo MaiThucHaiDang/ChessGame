@@ -1,0 +1,42 @@
+#pragma once
+#include <memory>
+#include <vector>
+#include <utility> // std::pair
+#include <string>
+#include "Piece.h"
+#include "Common.h"
+
+constexpr size_t BOARD_SIZE = 8;
+
+class Board
+{
+private:
+	std::unique_ptr<Piece> board[BOARD_SIZE][BOARD_SIZE];
+	Color currentTurn;
+
+	bool KCastle;
+	bool QCastle;
+	bool kCastle;
+	bool qCastle;
+
+	std::pair<int, int> enPassantTarget;
+	int halfMoveClock;
+	int fullMoveNumber;
+public:
+	Board();
+
+	Piece* getPieceAt(int x, int y) const;
+	std::vector<std::pair<int, int>> getPseudoLegalMoves(int x, int y) const;
+	Color getCurrentTurn() const;
+	bool getKCastle() const;
+	bool getQCastle() const;
+	bool getkCastle() const;
+	bool getqCastle() const;
+	std::pair<int, int> getEnPassantTarget() const;
+	int getHalfMoveClock() const;
+	int getFullMoveNumber() const;
+
+	void resetBoard();
+	void loadFEN(const std::string& fen);
+	void makeMove(int x1, int y1, int x2, int y2, PieceType promoteTo);
+};
