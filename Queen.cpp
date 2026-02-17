@@ -6,19 +6,17 @@ Queen::Queen() : Piece(NONE, PieceType::QUEEN) {}
 std::vector<std::pair<int, int>> Queen::getPseudoLegalMoves(const Board& board, int x, int y) const
 {
 	std::vector<std::pair<int, int>> pseudoLegalMoves;
-	for (int i = -1; i <= 1; i++)
-		for (int j = -1; j <= 1; j++)
-			if (i || j)
+	int dx[] = { 0,-1,-1,-1,0,1,1,1 };
+	int dy[] = { 1,1,0,-1,-1,-1,0,1 };
+	for (int i = 0; i < 8; i++)
+		for (int j = 1; std::max(x + j * dx[i], y + j * dy[i]) < 8 && std::min(x + j * dx[i], y + j * dy[i]) >= 0; j++)
+			if (!board.getPieceAt(x + j * dx[i], y + j * dy[i]))
+				pseudoLegalMoves.push_back({ x + j * dx[i], y + j * dy[i] });
+			else
 			{
-				for (int k = 1; std::min(x + k * i, y + k * j) >= 0 && std::max(x + k * i, y + k * j) < 8; k++)
-					if (!board.getPieceAt(x + k * i, y + k * j))
-						pseudoLegalMoves.push_back({ x + k * i, y + k * j });
-					else
-					{
-						if (board.getPieceAt(x + k * i, y + k * j)->getColor() != color)
-							pseudoLegalMoves.push_back({ x + k * i, y + k * j });
-						break;
-					}
+				if (board.getPieceAt(x + j * dx[i], y + j * dy[i])->getColor() != color)
+					pseudoLegalMoves.push_back({ x + j * dx[i], y + j * dy[i] });
+				break;
 			}
 
 	return pseudoLegalMoves;

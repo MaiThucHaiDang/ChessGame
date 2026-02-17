@@ -6,26 +6,20 @@ Rook::Rook() : Piece(NONE, PieceType::ROOK) {}
 std::vector<std::pair<int, int>> Rook::getPseudoLegalMoves(const Board& board, int x, int y) const
 {
 	std::vector<std::pair<int, int>> pseudoLegalMoves;
-	for (int i = -1; i <= 1; i++)
-		for (int k = 1; x + k * i >= 0 && x + k * i < 8; k++)
-			if (!board.getPieceAt(x + k * i, y))
-				pseudoLegalMoves.push_back({ x + k * i, y });
+	int dx[] = { 0, -1, 0, 1 };
+	int dy[] = { 1, 0, -1, 0 };
+	for (int i = 0; i < 4; i++)
+	{
+		for (int j = 1; std::max(x + j * dx[i], y + j * dy[i]) < 8 && std::min(x + j * dx[i], y + j * dy[i]) >= 0; j++)
+			if (!board.getPieceAt(x + j * dx[i], y + j * dy[i]))
+				pseudoLegalMoves.push_back({ x + j * dx[i], y + j * dy[i] });
 			else
 			{
-				if (board.getPieceAt(x + k * i, y)->getColor() != color)
-					pseudoLegalMoves.push_back({ x + k * i, y });
+				if (board.getPieceAt(x + j * dx[i], y + j * dy[i])->getColor() != color)
+					pseudoLegalMoves.push_back({ x + j * dx[i], y + j * dy[i] });
 				break;
 			}
-	for (int i = -1; i <= 1; i++)
-		for (int k = 1; y + k * i >= 0 && y + k * i < 8; k++)
-			if (!board.getPieceAt(x, y + k * i))
-				pseudoLegalMoves.push_back({ x, y + k * i });
-			else
-			{
-				if (board.getPieceAt(x, y + k * i)->getColor() != color)
-					pseudoLegalMoves.push_back({ x, y + k * i });
-				break;
-			}
+	}
 
 	return pseudoLegalMoves;
 }

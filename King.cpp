@@ -6,14 +6,14 @@ King::King() : Piece(NONE, PieceType::KING) {}
 std::vector<std::pair<int, int>> King::getPseudoLegalMoves(const Board& board, int x, int y) const
 {
 	std::vector<std::pair<int, int>> pseudoLegalMoves;
-	for (int i = -1; i <= 1; i++)
-		for (int j = -1; j <= 1; j++)
-			if ((i || j) &&
-				std::min(x + i, y + j) >= 0 &&
-				std::max(x + i, y + j) < 8 &&
-				(!board.getPieceAt(x + i, y + j) ||
-				board.getPieceAt(x + i, y + j)->getColor() != color))
-				pseudoLegalMoves.push_back({ x + i, y + j });
+	int dx[] = { 0,-1,-1,-1,0,1,1,1 };
+	int dy[] = { 1,1,0,-1,-1,-1,0,1 };
+	for (int i = 0; i < 8; i++)
+		if (std::max(x + dx[i], y + dy[i]) < 8 &&
+			std::min(x + dx[i], y + dy[i]) >= 0 &&
+			(!board.getPieceAt(x + dx[i], y + dy[i]) || board.getPieceAt(x + dx[i], y + dy[i])->getColor() != color))
+			pseudoLegalMoves.push_back({ x + dx[i], y + dy[i] });
+
 	if (color == WHITE)
 	{
 		if (board.getKCastle() && !board.getPieceAt(7, 5) && !board.getPieceAt(7, 6))

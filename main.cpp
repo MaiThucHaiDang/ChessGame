@@ -20,7 +20,6 @@ void print(Board& board)
 int main()
 {
 	auto testFEN1 = "2nbk2r/p3p3/rP3q1P/6pP/6P1/Rp3Q1p/P3P3/2NBK2R w Kk g6 1 1";
-	auto testFEN2 = "2nbk2r/p3p3/rP3q1P/6p1/6Pp/Rp3Q1p/P3P3/2NBK2R b Kk g3 1 1";
 	Board board;
 	board.loadFEN(testFEN1);
 	print(board);
