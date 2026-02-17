@@ -19,9 +19,10 @@ void print(Board& board)
 
 int main()
 {
-	auto testFEN1 = "2nbk2r/p3p3/rP3q1P/6pP/6P1/Rp3Q1p/P3P3/2NBK2R w Kk g6 1 1";
+	auto testFEN1 = "2nbk2r/p3p3/rP3q1P/6p1/6P1/Rp3Q1p/P3P3/2NBK2R w Kk - 0 1";
 	Board board;
 	board.loadFEN(testFEN1);
+	std::cout << testFEN1 << std::endl << board.makeFEN() << std::endl;
 	print(board);
 	std::string x;
 	while (std::cin >> x)

@@ -18,5 +18,6 @@ public:
 	void setColor(Color c);
 
 	Color getColor() const;
+	PieceType getType() const;
 	virtual std::vector<std::pair<int, int>> getPseudoLegalMoves(const Board& board, int x, int y) const = 0;
 };

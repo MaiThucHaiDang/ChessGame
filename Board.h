@@ -22,6 +22,9 @@ private:
 	std::pair<int, int> enPassantTarget;
 	int halfMoveClock;
 	int fullMoveNumber;
+
+	std::pair<int, int> whiteKingPos;
+	std::pair<int, int> blackKingPos;
 public:
 	Board();
 
@@ -38,5 +41,6 @@ public:
 
 	void resetBoard();
 	void loadFEN(const std::string& fen);
+	std::string makeFEN();
 	void makeMove(int x1, int y1, int x2, int y2, PieceType promoteTo);
 };
