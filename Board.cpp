@@ -3,8 +3,11 @@
 #include "PieceFactory.h"
 #include <string>
 #include "Utils.h"
+#include "Pawn.h"
+#include "Rook.h"
+#include "King.h"
 
-constexpr auto START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"; 
+constexpr auto START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 // Chữ thường là quân đen, chữ HOA là quân trắng, số là số ô không có quân liên tiếp
 // w là lượt quân trắng, b là lượt quân đen
 // Quyền nhập thành: Kk là nhập cánh vua, Qq là nhập cánh hậu, dùng - nếu không ai còn quyền nhập thành
@@ -19,14 +22,6 @@ Board::Board() : currentTurn(NONE), KCastle(0), QCastle(0), kCastle(0), qCastle(
 			board[i][j] = nullptr;
 }
 
-Piece* Board::getPieceAt(int x, int y) const
-{
-	if (x < 0 || x > 7 || y < 0 || y > 7) 
-		return nullptr;
-
-	return board[x][y].get();
-}
-std::vector<std::pair<int, int>> Board::getPseudoLegalMoves(int x, int y) const { return board[x][y]->getPseudoLegalMoves(*this, x, y); }
 Color Board::getCurrentTurn() const { return currentTurn; }
 bool Board::getKCastle() const { return KCastle; }
 bool Board::getQCastle() const { return QCastle; }
@@ -35,6 +30,32 @@ bool Board::getqCastle() const { return qCastle; }
 std::pair<int, int> Board::getEnPassantTarget() const { return enPassantTarget; }
 int Board::getHalfMoveClock() const { return halfMoveClock; }
 int Board::getFullMoveNumber() const { return fullMoveNumber; }
+Piece* Board::getPieceAt(int x, int y) const
+{
+	if (x < 0 || x > 7 || y < 0 || y > 7)
+		return nullptr;
+
+	return board[x][y].get();
+}
+std::vector<std::pair<int, int>> Board::getPseudoLegalMoves(int x, int y) const { return board[x][y]->getPseudoLegalMoves(*this, x, y); }
+std::vector<std::pair<int, int>> Board::getLegalMoves(int x, int y)
+{
+	std::vector<std::pair<int, int>> legalMoves;
+	auto currentPiece = std::move(board[x][y]);
+	std::unique_ptr<Piece> targetPiece = nullptr;
+	for (const auto& coord : getPseudoLegalMoves(x, y))
+	{
+		targetPiece = std::move(board[coord.first][coord.second]);
+		board[coord.first][coord.second] = std::move(currentPiece);
+		if (!isInCheck())
+			legalMoves.push_back(coord);
+		currentPiece = std::move(board[coord.first][coord.second]);
+		board[coord.first][coord.second] = std::move(targetPiece);
+	}
+	board[x][y] = std::move(currentPiece);
+
+	return legalMoves;
+}
 
 void Board::resetBoard()
 {
@@ -107,7 +128,7 @@ void Board::loadFEN(const std::string& fen)
 
 	ss >> halfMoveClock >> fullMoveNumber;
 }
-std::string Board::makeFEN()
+std::string Board::makeFEN() const
 {
 	std::string fen;
 	for (int i = 0; i < 8; i++)
@@ -123,7 +144,7 @@ std::string Board::makeFEN()
 					fen += std::to_string(count);
 					count = 0;
 				}
-				
+
 				switch (board[i][j]->getType())
 				{
 				case PieceType::PAWN:
@@ -164,10 +185,10 @@ std::string Board::makeFEN()
 					break;
 				}
 			}
-		
+
 		if (count)
 			fen += std::to_string(count);
-		if (i != 7) 
+		if (i != 7)
 			fen += "/";
 	}
 
@@ -196,7 +217,126 @@ std::string Board::makeFEN()
 
 	return fen + std::to_string(halfMoveClock) + " " + std::to_string(fullMoveNumber);
 }
+bool Board::isInCheck() const
+{
+	std::pair<int, int> kingPos;
+	if (currentTurn == WHITE)
+		kingPos = whiteKingPos;
+	else
+		kingPos = blackKingPos;
+
+	for (int i = 0; i < 8; i++)
+		for (int j = 0; j < 8; j++)
+			if (board[i][j] && board[i][j]->getColor() != currentTurn)
+			{
+				for (const auto& coord : getPseudoLegalMoves(i, j))
+					if (coord == kingPos)
+						return 1;
+			}
+
+	return 0;
+}
+bool Board::hasAnyLegalMoves()
+{
+	for (int i = 0; i < 8; i++)
+		for (int j = 0; j < 8; j++)
+			if (board[i][j] && board[i][j]->getColor() == currentTurn && !getLegalMoves(i, j).empty())
+				return 1;
+
+	return 0;
+}
+bool Board::isStalemate()
+{
+	if (!hasAnyLegalMoves() && !isInCheck())
+		return 1;
+
+	return 0;
+}
+bool Board::isCheckmate()
+{
+	if (!hasAnyLegalMoves() && isInCheck())
+		return 1;
+
+	return 0;
+}
 void Board::makeMove(int x1, int y1, int x2, int y2, PieceType promoteTo = PieceType::QUEEN)
 {
+	bool isPromotion = board[x1][y1]->getType() == PieceType::PAWN && (x2 == 0 || x2 == 7);
+	history.push_back(Move({ x1, y1 }, { x2, y2 }, board[x2][y2] ? board[x2][y2]->getType() : PieceType::EMPTY, KCastle, QCastle, kCastle, qCastle, currentTurn, enPassantTarget, isPromotion, halfMoveClock, fullMoveNumber));
+
+	if (!board[x2][y2])
+		halfMoveClock++;
+	else
+		halfMoveClock = 0;
+
 	board[x2][y2] = std::move(board[x1][y1]);
+
+	switch (board[x2][y2]->getType())
+	{
+	case PieceType::KING:
+		if (y1 == 4)
+			if (currentTurn == WHITE)
+			{
+				if (x1 == 7)
+					KCastle = QCastle = 0;
+			}
+			else
+				if (x1 == 0)
+					kCastle = qCastle = 0;
+		break;
+	case PieceType::ROOK:
+		if (currentTurn == WHITE)
+		{
+			if (KCastle && y1 == 7)
+				KCastle = 0;
+			if (QCastle && y1 == 0)
+				QCastle = 0;
+		}
+		else
+		{
+			if (kCastle && y1 == 7)
+				kCastle = 0;
+			if (qCastle && y1 == 0)
+				qCastle = 0;
+		}
+		break;
+	case PieceType::PAWN:
+		enPassantTarget = (abs(x1 - x2) == 2) ? std::make_pair(x2, y2) : std::make_pair(-1, -1);
+		if (isPromotion)
+			board[x2][y2] = PieceFactory::createPiece(promoteTo);
+		break;
+	}
+
+	if (currentTurn == WHITE)
+		currentTurn = BLACK;
+	else
+	{
+		currentTurn = WHITE;
+		fullMoveNumber++;
+	}
+}
+
+void Board::undoMove()
+{
+	if (history.empty())
+		return;
+
+	Move lastMove = history.back();
+	history.pop_back();
+
+	if (lastMove.isPromotion)
+		board[lastMove.firstPos.first][lastMove.firstPos.second] = PieceFactory::createPiece(PieceType::PAWN);
+	else
+		board[lastMove.firstPos.first][lastMove.firstPos.second] = std::move(board[lastMove.secondPos.first][lastMove.secondPos.second]);
+	board[lastMove.secondPos.first][lastMove.secondPos.second] = PieceFactory::createPiece(lastMove.takenPiece);
+	currentTurn = lastMove.turnBefore;
+
+	KCastle = lastMove.KCastleBefore;
+	QCastle = lastMove.QCastleBefore;
+	kCastle = lastMove.kCastleBefore;
+	qCastle = lastMove.qCastleBefore;
+
+	enPassantTarget = lastMove.enPassantTargetBefore;
+	halfMoveClock = lastMove.halfMoveClockBefore;
+	fullMoveNumber = lastMove.fullMoveNumberBefore;
 }
