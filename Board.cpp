@@ -40,19 +40,25 @@ Piece* Board::getPieceAt(int x, int y) const
 std::vector<std::pair<int, int>> Board::getPseudoLegalMoves(int x, int y) const { return board[x][y]->getPseudoLegalMoves(*this, x, y); }
 std::vector<std::pair<int, int>> Board::getLegalMoves(int x, int y)
 {
+	std::pair<int, int>& kingPos = board[x][y]->getColor() == WHITE ? whiteKingPos : blackKingPos;
 	std::vector<std::pair<int, int>> legalMoves;
+	auto pseudoLegalMoves = getPseudoLegalMoves(x, y);
 	auto currentPiece = std::move(board[x][y]);
 	std::unique_ptr<Piece> targetPiece = nullptr;
-	for (const auto& coord : getPseudoLegalMoves(x, y))
+	for (const auto& coord : pseudoLegalMoves)
 	{
 		targetPiece = std::move(board[coord.first][coord.second]);
 		board[coord.first][coord.second] = std::move(currentPiece);
+		if (board[coord.first][coord.second]->getType() == PieceType::KING)
+			kingPos = { coord.first, coord.second };
 		if (!isInCheck())
 			legalMoves.push_back(coord);
+
 		currentPiece = std::move(board[coord.first][coord.second]);
 		board[coord.first][coord.second] = std::move(targetPiece);
 	}
 	board[x][y] = std::move(currentPiece);
+	kingPos = { x, y };
 
 	return legalMoves;
 }
@@ -83,7 +89,10 @@ void Board::loadFEN(const std::string& fen)
 				(board[x][y++] = PieceFactory::createPiece(tolower(piece)))->setColor(WHITE);
 			}
 			else
-				y += piece - '0';
+			{
+				for (; y < piece - '0'; y++)
+					board[x][y] = nullptr;
+			}
 	}
 	std::getline(ss, data, ' ');
 	int y = 0;
@@ -264,7 +273,7 @@ void Board::makeMove(int x1, int y1, int x2, int y2, PieceType promoteTo = Piece
 	bool isPromotion = board[x1][y1]->getType() == PieceType::PAWN && (x2 == 0 || x2 == 7);
 	history.push_back(Move({ x1, y1 }, { x2, y2 }, board[x2][y2] ? board[x2][y2]->getType() : PieceType::EMPTY, KCastle, QCastle, kCastle, qCastle, currentTurn, enPassantTarget, isPromotion, halfMoveClock, fullMoveNumber));
 
-	if (!board[x2][y2])
+	if (!board[x2][y2] && board[x1][y1]->getType() != PieceType::PAWN)
 		halfMoveClock++;
 	else
 		halfMoveClock = 0;
@@ -275,14 +284,29 @@ void Board::makeMove(int x1, int y1, int x2, int y2, PieceType promoteTo = Piece
 	{
 	case PieceType::KING:
 		if (y1 == 4)
+		{
 			if (currentTurn == WHITE)
 			{
 				if (x1 == 7)
 					KCastle = QCastle = 0;
 			}
 			else
+			{
 				if (x1 == 0)
 					kCastle = qCastle = 0;
+			}
+
+			if (y2 == 6)
+				board[x1][5] = std::move(board[x1][7]);
+			else if (y2 == 2)
+				board[x1][3] = std::move(board[x1][0]);
+		}
+
+		if (currentTurn == WHITE)
+			whiteKingPos = { x2, y2 };
+		else
+			blackKingPos = { x2, y2 };
+
 		break;
 	case PieceType::ROOK:
 		if (currentTurn == WHITE)
@@ -301,9 +325,12 @@ void Board::makeMove(int x1, int y1, int x2, int y2, PieceType promoteTo = Piece
 		}
 		break;
 	case PieceType::PAWN:
-		enPassantTarget = (abs(x1 - x2) == 2) ? std::make_pair(x2, y2) : std::make_pair(-1, -1);
+		if (std::make_pair(x2, y2) == enPassantTarget)
+			board[x1][y2] = nullptr;
+
+		enPassantTarget = (abs(x1 - x2) == 2) ? std::make_pair((x1 + x2) / 2, y2) : std::make_pair(-1, -1);
 		if (isPromotion)
-			board[x2][y2] = PieceFactory::createPiece(promoteTo);
+			(board[x2][y2] = PieceFactory::createPiece(promoteTo))->setColor(currentTurn);
 		break;
 	}
 
@@ -324,11 +351,32 @@ void Board::undoMove()
 	Move lastMove = history.back();
 	history.pop_back();
 
+	if (board[lastMove.secondPos.first][lastMove.secondPos.second]->getType() == PieceType::KING)
+	{
+		if (lastMove.turnBefore == WHITE)
+			whiteKingPos = lastMove.firstPos;
+		else
+			blackKingPos = lastMove.firstPos;
+
+		if (lastMove.firstPos.second == 4)
+		{
+			if (lastMove.secondPos.second == 6)
+				board[lastMove.firstPos.first][7] = std::move(board[lastMove.firstPos.first][5]);
+			else if (lastMove.secondPos.second == 2)
+				board[lastMove.firstPos.first][0] = std::move(board[lastMove.firstPos.first][3]);
+		}
+	}
+
+	if (board[lastMove.secondPos.first][lastMove.secondPos.second]->getType() == PieceType::PAWN && lastMove.secondPos == lastMove.enPassantTargetBefore)
+		(board[lastMove.firstPos.first][lastMove.secondPos.second] = PieceFactory::createPiece(PieceType::PAWN))->setColor(currentTurn);
+
 	if (lastMove.isPromotion)
-		board[lastMove.firstPos.first][lastMove.firstPos.second] = PieceFactory::createPiece(PieceType::PAWN);
+		(board[lastMove.firstPos.first][lastMove.firstPos.second] = PieceFactory::createPiece(PieceType::PAWN))->setColor(lastMove.turnBefore);
 	else
 		board[lastMove.firstPos.first][lastMove.firstPos.second] = std::move(board[lastMove.secondPos.first][lastMove.secondPos.second]);
 	board[lastMove.secondPos.first][lastMove.secondPos.second] = PieceFactory::createPiece(lastMove.takenPiece);
+	if (board[lastMove.secondPos.first][lastMove.secondPos.second])
+		board[lastMove.secondPos.first][lastMove.secondPos.second]->setColor(currentTurn);
 	currentTurn = lastMove.turnBefore;
 
 	KCastle = lastMove.KCastleBefore;
