@@ -41,6 +41,7 @@ std::vector<std::pair<int, int>> Board::getPseudoLegalMoves(int x, int y) const 
 std::vector<std::pair<int, int>> Board::getLegalMoves(int x, int y)
 {
 	std::pair<int, int>& kingPos = board[x][y]->getColor() == WHITE ? whiteKingPos : blackKingPos;
+	bool isKing = board[x][y]->getType() == PieceType::KING;
 	std::vector<std::pair<int, int>> legalMoves;
 	auto pseudoLegalMoves = getPseudoLegalMoves(x, y);
 	auto currentPiece = std::move(board[x][y]);
@@ -49,7 +50,7 @@ std::vector<std::pair<int, int>> Board::getLegalMoves(int x, int y)
 	{
 		targetPiece = std::move(board[coord.first][coord.second]);
 		board[coord.first][coord.second] = std::move(currentPiece);
-		if (board[coord.first][coord.second]->getType() == PieceType::KING)
+		if (isKing)
 			kingPos = { coord.first, coord.second };
 		if (!isInCheck())
 			legalMoves.push_back(coord);
@@ -58,7 +59,8 @@ std::vector<std::pair<int, int>> Board::getLegalMoves(int x, int y)
 		board[coord.first][coord.second] = std::move(targetPiece);
 	}
 	board[x][y] = std::move(currentPiece);
-	kingPos = { x, y };
+	if (isKing)
+		kingPos = { x, y };
 
 	return legalMoves;
 }
