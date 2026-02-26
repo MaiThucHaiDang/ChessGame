@@ -28,6 +28,7 @@ private:
 	std::pair<int, int> blackKingPos;
 
 	std::vector<Move> history;
+	std::vector<std::string> fenHistory;
 public:
 	Board();
 
@@ -46,6 +47,9 @@ public:
 	void resetBoard();
 	void loadFEN(const std::string& fen);
 	std::string makeFEN() const;
+	std::string getFenBoardState(std::string fen) const;
+	bool isThreefoldRepetition() const;
+	bool isInsufficientMaterial() const;
 	bool isInCheck() const;
 	bool hasAnyLegalMoves();
 	bool isStalemate();

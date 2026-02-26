@@ -42,16 +42,21 @@ std::vector<std::pair<int, int>> Board::getLegalMoves(int x, int y)
 {
 	std::pair<int, int>& kingPos = board[x][y]->getColor() == WHITE ? whiteKingPos : blackKingPos;
 	bool isKing = board[x][y]->getType() == PieceType::KING;
+	bool isKingInCheck = isInCheck();
 	std::vector<std::pair<int, int>> legalMoves;
 	auto pseudoLegalMoves = getPseudoLegalMoves(x, y);
 	auto currentPiece = std::move(board[x][y]);
 	std::unique_ptr<Piece> targetPiece = nullptr;
 	for (const auto& coord : pseudoLegalMoves)
 	{
+		if (isKing)
+		{
+			if (abs(y - coord.second) == 2 && (isKingInCheck || std::find(legalMoves.begin(), legalMoves.end(), std::make_pair(x, (y + coord.second) / 2)) == legalMoves.end()))
+				continue;
+			kingPos = { coord.first, coord.second };
+		}
 		targetPiece = std::move(board[coord.first][coord.second]);
 		board[coord.first][coord.second] = std::move(currentPiece);
-		if (isKing)
-			kingPos = { coord.first, coord.second };
 		if (!isInCheck())
 			legalMoves.push_back(coord);
 
@@ -71,6 +76,8 @@ void Board::resetBoard()
 }
 void Board::loadFEN(const std::string& fen)
 {
+	fenHistory.clear();
+	fenHistory.push_back(fen);
 	std::stringstream ss(fen);
 	std::string data;
 	for (int x = 0; x < 7; x++)
@@ -92,19 +99,32 @@ void Board::loadFEN(const std::string& fen)
 			}
 			else
 			{
-				for (; y < piece - '0'; y++)
-					board[x][y] = nullptr;
+				for (int i = 0; i < piece - '0'; ++i)
+					board[x][y + i] = nullptr;
+				y += piece - '0';
 			}
 	}
 	std::getline(ss, data, ' ');
 	int y = 0;
 	for (const auto piece : data)
 		if (piece >= 'a' && piece <= 'z')
+		{
+			if (piece == 'k')
+				blackKingPos = { 7, y };
 			(board[7][y++] = PieceFactory::createPiece(piece))->setColor(BLACK);
+		}
 		else if (piece >= 'A' && piece <= 'Z')
+		{
+			if (piece == 'K')
+				whiteKingPos = { 7, y };
 			(board[7][y++] = PieceFactory::createPiece(tolower(piece)))->setColor(WHITE);
+		}
 		else
+		{
+			for (int i = 0; i < piece - '0'; ++i)
+				board[7][y + i] = nullptr;
 			y += piece - '0';
+		}
 
 	std::getline(ss, data, ' ');
 	if (data == "w")
@@ -228,6 +248,46 @@ std::string Board::makeFEN() const
 
 	return fen + std::to_string(halfMoveClock) + " " + std::to_string(fullMoveNumber);
 }
+std::string Board::getFenBoardState(std::string fen) const
+{
+	return fen.substr(0, fen.rfind(' ', fen.rfind(' ') - 1));
+}
+bool Board::isThreefoldRepetition() const
+{
+	auto currentFenBoardState = getFenBoardState(fenHistory.back());
+	int count = 0;
+	for (auto it = fenHistory.rbegin(); it != fenHistory.rend(); ++it)
+		if (currentFenBoardState == getFenBoardState(*it) && ++count == 3)
+			return 1;
+
+	return 0;
+}
+bool Board::isInsufficientMaterial() const
+{
+	bool hasMinorPieces = 0;
+	for (int x = 0; x < 8; x++)
+		for (int y = 0; y < 8; y++)
+		{
+			if (!board[x][y])
+				continue;
+
+			switch (board[x][y]->getType())
+			{
+			case PieceType::PAWN:
+			case PieceType::ROOK:
+			case PieceType::QUEEN:
+				return 0;
+			case PieceType::KNIGHT:
+			case PieceType::BISHOP:
+				if (!hasMinorPieces)
+					hasMinorPieces = 1;
+				else
+					return 0;
+			}
+		}
+
+	return 1;
+}
 bool Board::isInCheck() const
 {
 	std::pair<int, int> kingPos;
@@ -343,6 +403,8 @@ void Board::makeMove(int x1, int y1, int x2, int y2, PieceType promoteTo = Piece
 		currentTurn = WHITE;
 		fullMoveNumber++;
 	}
+
+	fenHistory.push_back(makeFEN());
 }
 
 void Board::undoMove()
@@ -352,6 +414,7 @@ void Board::undoMove()
 
 	Move lastMove = history.back();
 	history.pop_back();
+	fenHistory.pop_back();
 
 	if (board[lastMove.secondPos.first][lastMove.secondPos.second]->getType() == PieceType::KING)
 	{

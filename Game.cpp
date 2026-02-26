@@ -32,25 +32,33 @@ void Game::run()
 			std::cout << std::endl;
 		}
 
-		if (gameBoard.isCheckmate())
+		bool isGameOver = 0;
+		if (gameBoard.isCheckmate() && (isGameOver = 1))
 			std::cout << "Ben " << (gameBoard.getCurrentTurn() == WHITE ? "Trang" : "Den") << " da bi chieu het!\n";
-		if (gameBoard.isStalemate())
+		else if (gameBoard.isStalemate() && (isGameOver = 1))
 			std::cout << "Hoa do ben " << (gameBoard.getCurrentTurn() == WHITE ? "Trang" : "Den") << " het nuoc di!!\n";
+		else if (gameBoard.getHalfMoveClock() == 100 && (isGameOver = 1))
+			std::cout << "Hoa do luat 50 nuoc!\n";
+		else if (gameBoard.isThreefoldRepetition() && (isGameOver = 1))
+			std::cout << "Hoa do lap lai the co 3 lan!\n";
+		else if (gameBoard.isInsufficientMaterial() && (isGameOver = 1))
+			std::cout << "Hoa do luat khong du quan!\n";
 
 		int choose;
 		std::cout << "\n	Menu:\n";
-		std::cout << "0: Ket thuc game.\n";
-		std::cout << "1: Di chuyen quan.\n";
-		std::cout << "2: Undo Move.\n";
-		std::cout << "3. Choi lai.\n";
+		if (!isGameOver)
+			std::cout << "0: Di chuyen quan.\n";
+		std::cout << "1: Undo Move.\n";
+		std::cout << "2. Choi lai.\n";
+		std::cout << "3: Ket thuc game.\n";
 		std::cout << "Ban muon lam gi: ";
 		std::cin >> choose;
 		switch (choose)
 		{
 		case 0:
-			return;
-		case 1:
 		{
+			if (isGameOver)
+				break;
 			std::string start, end;
 			std::cout << "\nChon vi tri ban muon di chuyen quan: ";
 			std::cin >> start;
@@ -112,16 +120,18 @@ void Game::run()
 						break;
 					}
 				}
-					gameBoard.makeMove(coordStart.first, coordStart.second, coordEnd.first, coordEnd.second, promoteTo);
+				gameBoard.makeMove(coordStart.first, coordStart.second, coordEnd.first, coordEnd.second, promoteTo);
 			}
 			break;
 		}
-		case 2:
+		case 1:
 			gameBoard.undoMove();
 			break;
-		case 3:
+		case 2:
 			gameBoard.resetBoard();
 			break;
+		case 3:
+			return;
 		}
 
 		std::cout << "\033[2J\033[1;1H";
