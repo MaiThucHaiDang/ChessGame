@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
@@ -13,84 +13,94 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="backend">
+      <UniqueIdentifier>{9A5B8022-D5E3-4B8C-9F6D-3D2E5A8B9C10}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="frontend">
+      <UniqueIdentifier>{B2A8C7F1-E6D4-4F5B-8A9C-7E4D1B3F2A09}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Pawn.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="backend\Pawn.h">
+      <Filter>backend</Filter>
     </ClInclude>
-    <ClInclude Include="Rook.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="backend\Rook.h">
+      <Filter>backend</Filter>
     </ClInclude>
-    <ClInclude Include="Knight.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="backend\Knight.h">
+      <Filter>backend</Filter>
     </ClInclude>
-    <ClInclude Include="Bishop.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="backend\Bishop.h">
+      <Filter>backend</Filter>
     </ClInclude>
-    <ClInclude Include="Queen.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="backend\Queen.h">
+      <Filter>backend</Filter>
     </ClInclude>
-    <ClInclude Include="King.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="backend\King.h">
+      <Filter>backend</Filter>
     </ClInclude>
-    <ClInclude Include="Board.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="backend\Board.h">
+      <Filter>backend</Filter>
     </ClInclude>
-    <ClInclude Include="Piece.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="backend\Piece.h">
+      <Filter>backend</Filter>
     </ClInclude>
-    <ClInclude Include="PieceFactory.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="backend\PieceFactory.h">
+      <Filter>backend</Filter>
     </ClInclude>
-    <ClInclude Include="Utils.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="backend\Utils.h">
+      <Filter>backend</Filter>
     </ClInclude>
-    <ClInclude Include="Common.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="backend\Common.h">
+      <Filter>backend</Filter>
     </ClInclude>
-    <ClInclude Include="Move.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Game.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="backend\Move.h">
+      <Filter>backend</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Piece.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="backend\Piece.cpp">
+      <Filter>backend</Filter>
     </ClCompile>
-    <ClCompile Include="Pawn.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="backend\Pawn.cpp">
+      <Filter>backend</Filter>
     </ClCompile>
-    <ClCompile Include="Rook.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="backend\Rook.cpp">
+      <Filter>backend</Filter>
     </ClCompile>
-    <ClCompile Include="Knight.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="backend\Knight.cpp">
+      <Filter>backend</Filter>
     </ClCompile>
-    <ClCompile Include="Bishop.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="backend\Bishop.cpp">
+      <Filter>backend</Filter>
     </ClCompile>
-    <ClCompile Include="Queen.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="backend\Queen.cpp">
+      <Filter>backend</Filter>
     </ClCompile>
-    <ClCompile Include="King.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="backend\King.cpp">
+      <Filter>backend</Filter>
     </ClCompile>
-    <ClCompile Include="Board.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="backend\Board.cpp">
+      <Filter>backend</Filter>
     </ClCompile>
-    <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="frontend\main.cpp">
+      <Filter>frontend</Filter>
     </ClCompile>
-    <ClCompile Include="PieceFactory.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="frontend\MainWindow.cpp">
+      <Filter>frontend</Filter>
     </ClCompile>
-    <ClCompile Include="Move.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="backend\PieceFactory.cpp">
+      <Filter>backend</Filter>
     </ClCompile>
-    <ClCompile Include="Game.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="frontend\MainWindow.h">
+      <Filter>frontend</Filter>
+    </QtMoc>
+  </ItemGroup>
+  <ItemGroup>
+    <QtUic Include="frontend\MainWindow.ui">
+      <Filter>frontend</Filter>
+    </QtUic>
   </ItemGroup>
 </Project>

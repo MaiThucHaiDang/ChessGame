@@ -1,11 +1,10 @@
 #pragma once
 #include "Piece.h"
 
-class Rook : public Piece
+class Pawn : public Piece
 {
 public:
-	char print() override { return color == WHITE ? 'R' : 'r'; }
-	Rook();
+	Pawn();
 
 	std::vector<std::pair<int, int>> getPseudoLegalMoves(const Board& board, int x, int y) const override;
 };

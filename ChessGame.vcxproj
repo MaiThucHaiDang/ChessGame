@@ -24,6 +24,8 @@
     <ProjectGuid>{3ff45347-5620-4856-b064-3f36e298182e}</ProjectGuid>
     <RootNamespace>ChessGame</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <Keyword>QtVS_v304</Keyword>
+    <QtMsBuild Condition="'$(QtMsBuild)'=='' OR !Exists('$(QtMsBuild)\qt.targets')">$(MSBuildProjectDirectory)\QtMsBuild</QtMsBuild>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -53,21 +55,43 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <Import Project="$(QtMsBuild)\qt_defaults.props" Condition="Exists('$(QtMsBuild)\qt_defaults.props')" />
+  <PropertyGroup Label="QtSettings" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <QtInstall>Qt_6.11.0_msvc2022_64</QtInstall>
+    <QtModules>core;gui;widgets</QtModules>
+  </PropertyGroup>
+  <PropertyGroup Label="QtSettings" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <QtModules>core;gui;widgets</QtModules>
+  </PropertyGroup>
+  <PropertyGroup Label="QtSettings" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <QtInstall>Qt_6.11.0_msvc2022_64</QtInstall>
+    <QtModules>core;gui;widgets</QtModules>
+  </PropertyGroup>
+  <PropertyGroup Label="QtSettings" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <QtModules>core;gui;widgets</QtModules>
+  </PropertyGroup>
+  <Target Name="QtMsBuildNotFound" BeforeTargets="CustomBuild;ClCompile" Condition="!Exists('$(QtMsBuild)\qt.targets') OR !Exists('$(QtMsBuild)\Qt.props')">
+    <Message Importance="High" Text="QtMsBuild: could not locate qt.targets, qt.props; project may not build correctly." />
+  </Target>
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
   <ImportGroup Label="Shared">
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(QtMsBuild)\Qt.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(QtMsBuild)\Qt.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(QtMsBuild)\Qt.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(QtMsBuild)\Qt.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -76,6 +100,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -90,6 +115,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -102,6 +128,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -116,6 +143,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -123,35 +151,38 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Bishop.h" />
-    <ClInclude Include="Board.h" />
-    <ClInclude Include="Common.h" />
-    <ClInclude Include="Game.h" />
-    <ClInclude Include="King.h" />
-    <ClInclude Include="Knight.h" />
-    <ClInclude Include="Move.h" />
-    <ClInclude Include="Pawn.h" />
-    <ClInclude Include="Piece.h" />
-    <ClInclude Include="PieceFactory.h" />
-    <ClInclude Include="Queen.h" />
-    <ClInclude Include="Rook.h" />
-    <ClInclude Include="Utils.h" />
+    <ClInclude Include="backend\Bishop.h" />
+    <ClInclude Include="backend\Board.h" />
+    <ClInclude Include="backend\Common.h" />
+    <ClInclude Include="backend\King.h" />
+    <ClInclude Include="backend\Knight.h" />
+    <QtMoc Include="frontend\MainWindow.h" />
+    <ClInclude Include="backend\Move.h" />
+    <ClInclude Include="backend\Pawn.h" />
+    <ClInclude Include="backend\Piece.h" />
+    <ClInclude Include="backend\PieceFactory.h" />
+    <ClInclude Include="backend\Queen.h" />
+    <ClInclude Include="backend\Rook.h" />
+    <ClInclude Include="backend\Utils.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Bishop.cpp" />
-    <ClCompile Include="Board.cpp" />
-    <ClCompile Include="Game.cpp" />
-    <ClCompile Include="King.cpp" />
-    <ClCompile Include="Knight.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="Move.cpp" />
-    <ClCompile Include="Pawn.cpp" />
-    <ClCompile Include="Piece.cpp" />
-    <ClCompile Include="PieceFactory.cpp" />
-    <ClCompile Include="Queen.cpp" />
-    <ClCompile Include="Rook.cpp" />
+    <ClCompile Include="backend\Bishop.cpp" />
+    <ClCompile Include="backend\Board.cpp" />
+    <ClCompile Include="backend\King.cpp" />
+    <ClCompile Include="backend\Knight.cpp" />
+    <ClCompile Include="frontend\main.cpp" />
+    <ClCompile Include="frontend\MainWindow.cpp" />
+    <ClCompile Include="backend\Pawn.cpp" />
+    <ClCompile Include="backend\Piece.cpp" />
+    <ClCompile Include="backend\PieceFactory.cpp" />
+    <ClCompile Include="backend\Queen.cpp" />
+    <ClCompile Include="backend\Rook.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <QtUic Include="frontend\MainWindow.ui" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <Import Project="$(QtMsBuild)\qt.targets" Condition="Exists('$(QtMsBuild)\qt.targets')" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
 </Project>
