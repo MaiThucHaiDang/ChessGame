@@ -342,6 +342,8 @@ void Board::makeMove(int x1, int y1, int x2, int y2, PieceType promoteTo = Piece
 
 	board[x2][y2] = std::move(board[x1][y1]);
 
+	enPassantTarget = { -1, -1 };
+
 	switch (board[x2][y2]->getType())
 	{
 	case PieceType::KING:

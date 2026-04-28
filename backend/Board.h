@@ -1,7 +1,7 @@
 #pragma once
 #include <memory>
 #include <vector>
-#include <utility> // std::pair
+#include <utility>
 #include <string>
 #include "Piece.h"
 #include "Common.h"

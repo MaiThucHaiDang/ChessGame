@@ -12,7 +12,6 @@ protected:
 	Color color;
 	PieceType type;
 public:
-	virtual char print() = 0; // test
 	Piece(Color c, PieceType t);
 
 	void setColor(Color c);
